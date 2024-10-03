@@ -1,88 +1,80 @@
-from marshmallow import Schema, fields, post_load
-from models import Employee, Document, Task, Attendance, LeaveRequest, Payroll
+from flask import Blueprint
+from marshmallow import validates, ValidationError
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
+from models import db, Employee, Manager, Admin, Document, Task, Attendance, LeaveRequest, Payroll, Notification
 
-class EmployeeSchema(Schema):
-    id = fields.Str(required=True)
-    first_name = fields.Str(required=True)
-    last_name = fields.Str(required=True)
-    email = fields.Email(required=True)
-    position = fields.Str(required=True)
-    manager_id = fields.Str(allow_none=True)
-    documents = fields.List(fields.Nested('DocumentSchema'), dump_only=True)
-    tasks = fields.List(fields.Nested('TaskSchema'), dump_only=True)
-    leave_requests = fields.List(fields.Nested('LeaveRequestSchema'), dump_only=True)
+# Create a Blueprint for serializers
+serializer_bp = Blueprint('serializer_bp', __name__)
 
-    @post_load
-    def create_employee(self, data, **kwargs):
-        return Employee(**data)
+class EmployeeSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Employee
+        load_instance = True
+        include_relationships = True  # Include related objects
 
-class DocumentSchema(Schema):
-    id = fields.Str(required=True)
-    employee_id = fields.Str(required=True)
-    document_type = fields.Str(required=True)
-    file_path = fields.Str(required=True)
+class ManagerSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Manager
+        load_instance = True
+        include_relationships = True
 
-    @post_load
-    def create_document(self, data, **kwargs):
-        return Document(**data)
+class AdminSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Admin
+        load_instance = True
+        include_relationships = True
 
-class TaskSchema(Schema):
-    id = fields.Str(required=True)
-    employee_id = fields.Str(required=True)
-    title = fields.Str(required=True)
-    description = fields.Str(allow_none=True)
-    status = fields.Str(required=True)
-    due_date = fields.Date(required=True)
+class DocumentSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Document
+        load_instance = True
 
-    @post_load
-    def create_task(self, data, **kwargs):
-        return Task(**data)
+class TaskSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Task
+        load_instance = True
 
-class AttendanceSchema(Schema):
-    id = fields.Str(required=True)
-    employee_id = fields.Str(required=True)
-    clock_in_time = fields.DateTime(required=True)
-    clock_out_time = fields.DateTime(allow_none=True)
-    status = fields.Str(required=True)
+class AttendanceSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Attendance
+        load_instance = True
 
-    @post_load
-    def create_attendance(self, data, **kwargs):
-        return Attendance(**data)
+class LeaveRequestSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = LeaveRequest
+        load_instance = True
 
-class LeaveRequestSchema(Schema):
-    id = fields.Str(required=True)
-    employee_id = fields.Str(required=True)
-    leave_type = fields.Str(required=True)
-    start_date = fields.Date(required=True)
-    end_date = fields.Date(required=True)
-    status = fields.Str(required=True)
+class PayrollSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Payroll
+        load_instance = True
 
-    @post_load
-    def create_leave_request(self, data, **kwargs):
-        return LeaveRequest(**data)
+class NotificationSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Notification
+        load_instance = True
 
-class PayrollSchema(Schema):
-    id = fields.Str(required=True)
-    employee_id = fields.Str(required=True)
-    salary = fields.Float(required=True)
-    pay_date = fields.Date(required=True)
-    pay_period_start = fields.Date(required=True)
-    pay_period_end = fields.Date(required=True)
+# Example of a custom validation
+class EmployeeRegisterSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Employee
+        exclude = ('id',)  # Exclude ID for registration
 
-    @post_load
-    def create_payroll(self, data, **kwargs):
-        return Payroll(**data)
+    @validates('email')
+    def validate_email(self, email):
+        if Employee.query.filter_by(email=email).first():
+            raise ValidationError("Email already exists")
 
-employee_schema = EmployeeSchema()
-document_schema = DocumentSchema()
-task_schema = TaskSchema()
-attendance_schema = AttendanceSchema()
-leave_request_schema = LeaveRequestSchema()
-payroll_schema = PayrollSchema()
-
-employees_schema = EmployeeSchema(many=True)
-documents_schema = DocumentSchema(many=True)
-tasks_schema = TaskSchema(many=True)
-attendances_schema = AttendanceSchema(many=True)
-leave_requests_schema = LeaveRequestSchema(many=True)
-payrolls_schema = PayrollSchema(many=True)
+# Exporting the schemas for use in your routes or services
+__all__ = [
+    'EmployeeSchema',
+    'ManagerSchema',
+    'AdminSchema',
+    'DocumentSchema',
+    'TaskSchema',
+    'AttendanceSchema',
+    'LeaveRequestSchema',
+    'PayrollSchema',
+    'NotificationSchema',
+    'EmployeeRegisterSchema'
+]

@@ -6,6 +6,12 @@ name = "pypi"
 [packages]
 flask = "*"
 flask-sqlalchemy = "*"
+flask-restful = "*"
+flask-marshmallow = "*"
+marshmallow = "*"
+flask-bcrypt = "*"
+flask-reqparse = "*"
+marshmallow-sqlalchemy = "*"
 
 [dev-packages]
 
