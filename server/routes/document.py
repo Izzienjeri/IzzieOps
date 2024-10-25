@@ -20,4 +20,3 @@ class OnboardingDocumentResource(Resource):
         documents = OnboardingDocument.query.filter_by(employee_id=employee_id).all()
         return [{'id': doc.id, 'document_type': doc.document_type, 'document_path': doc.document_path} for doc in documents]
 
-# Add more methods (PUT, DELETE) as needed
