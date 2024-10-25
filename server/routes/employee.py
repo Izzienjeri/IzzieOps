@@ -32,5 +32,4 @@ class EmployeeResource(Resource):
             'department': employee.department
         }
 
-# Add more methods (PUT, DELETE) as needed
 
