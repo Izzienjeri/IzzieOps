@@ -3,14 +3,13 @@ from marshmallow import validates, ValidationError
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
 from models import db, Employee, Manager, Admin, Document, Task, Attendance, LeaveRequest, Payroll, Notification
 
-# Create a Blueprint for serializers
 serializer_bp = Blueprint('serializer_bp', __name__)
 
 class EmployeeSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Employee
         load_instance = True
-        include_relationships = True  # Include related objects
+        include_relationships = True  
 
 class ManagerSchema(SQLAlchemyAutoSchema):
     class Meta:
