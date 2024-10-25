@@ -11,7 +11,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Import your models
-from models import User, Document  # Adjust as necessary
+from models import Employee, OnboardingDocument, WelcomeEmail, Policy
 
 with app.app_context():
     db.create_all()  # This creates tables in the database based on your models

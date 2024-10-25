@@ -3,26 +3,53 @@ import uuid
 
 db = SQLAlchemy()
 
-class User(db.Model):
-    __tablename__ = 'users'
+class Employee(db.Model):
+    __tablename__ = 'employees'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    onboarding_documents = db.relationship('Document', backref='user', lazy=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(15), nullable=True)
+    position = db.Column(db.String(100), nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    onboarding_documents = db.relationship('OnboardingDocument', backref='employee', lazy=True)
 
     def __repr__(self):
-        return f'<User {self.first_name} {self.last_name}>'
+        return f'<Employee {self.first_name} {self.last_name}>'
 
-class Document(db.Model):
-    __tablename__ = 'documents'
+class OnboardingDocument(db.Model):
+    __tablename__ = 'onboarding_documents'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
-    document_type = db.Column(db.String(50), nullable=False)
-    file_path = db.Column(db.String(255), nullable=False)  # This will store the path to the uploaded document
-    submitted_at = db.Column(db.DateTime, server_default=db.func.now())
+    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
+    document_type = db.Column(db.String(100), nullable=False)  # e.g., 'ID', 'Contract'
+    document_path = db.Column(db.String(255), nullable=False)  # Path to the uploaded document
+    submitted_at = db.Column(db.DateTime, nullable=False)  # Timestamp for when the document was submitted
 
     def __repr__(self):
-        return f'<Document {self.document_type} for User {self.user_id}>'
+        return f'<OnboardingDocument {self.document_type} for Employee ID {self.employee_id}>'
+
+class WelcomeEmail(db.Model):
+    __tablename__ = 'welcome_emails'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
+    subject = db.Column(db.String(255), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    sent_at = db.Column(db.DateTime, nullable=True)  # Timestamp for when the email was sent
+
+    def __repr__(self):
+        return f'<WelcomeEmail for Employee ID {self.employee_id}>'
+
+class Policy(db.Model):
+    __tablename__ = 'policies'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=False)  # The full content of the policy
+    created_at = db.Column(db.DateTime, nullable=False)  # When the policy was created
+    updated_at = db.Column(db.DateTime, nullable=True)  # When the policy was last updated
+
+    def __repr__(self):
+        return f'<Policy {self.title}>'
