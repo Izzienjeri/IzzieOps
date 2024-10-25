@@ -12,6 +12,8 @@ marshmallow = "*"
 flask-bcrypt = "*"
 flask-reqparse = "*"
 marshmallow-sqlalchemy = "*"
+flask-migrate = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
