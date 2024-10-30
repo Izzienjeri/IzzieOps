@@ -1,0 +1,8 @@
+psql -U postgres -h localhost
+
+
+
+flask db init  # Run this only once to initialize migrations
+flask db migrate -m "Initial migration."
+
+flask db upgrade
