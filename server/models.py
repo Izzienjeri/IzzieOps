@@ -3,8 +3,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import uuid
-
-db = SQLAlchemy()
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import db
 
 class Employee(db.Model):
     __tablename__ = 'employees'
@@ -16,8 +16,14 @@ class Employee(db.Model):
     phone = db.Column(db.String(15), nullable=True)
     position = db.Column(db.String(100), nullable=False)
     department = db.Column(db.String(100), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    password = db.Column(db.String(128), nullable=False)  # Add password field
     onboarding_documents = db.relationship('OnboardingDocument', backref='employee', lazy=True)
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)  # Hash the password
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)  # Verify the password
 
     def __repr__(self):
         return f'<Employee {self.first_name} {self.last_name}>'
