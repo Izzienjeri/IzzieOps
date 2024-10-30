@@ -1,8 +1,11 @@
-psql -U postgres -h localhost
+# Ignore node_modules folder
+node_modules/
 
+# Ignore environment variables file
+.env
 
+# Ignore all log files
+*.log
 
-flask db init  # Run this only once to initialize migrations
-flask db migrate -m "Initial migration."
-
-flask db upgrade
+# Ignore specific files
+.commands
