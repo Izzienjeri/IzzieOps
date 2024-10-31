@@ -1,12 +1,9 @@
-# app.py
 from flask import Flask
 from config import Config
 from flask_migrate import Migrate
-from extensions import db 
-from routes.employee import employee_bp  # Import the Employee Blueprint
-from routes.onboarding_document import onboarding_document_bp  # Import Onboarding Document Blueprint
-from routes.welcome_email import welcome_email_bp  # Import Welcome Email Blueprint
-from routes.policy import policy_bp  # Import Policy Blueprint
+from extensions import db, mail  # Import mail if you're using Flask-Mail for email functionality
+from serializer import serializer_bp
+from routes.onboarding import onboarding_bp  # Import the onboarding blueprint
 
 # Initialize migration tools
 migrate = Migrate()
@@ -14,15 +11,17 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    
-    # Register Blueprints
-    app.register_blueprint(employee_bp, url_prefix='/api')
-    app.register_blueprint(onboarding_document_bp, url_prefix='/api')
-    app.register_blueprint(welcome_email_bp, url_prefix='/api')
-    app.register_blueprint(policy_bp, url_prefix='/api')
+    mail.init_app(app)  # Initialize mail if using email functionality
 
+    # Register blueprints
+    app.register_blueprint(serializer_bp)
+    app.register_blueprint(onboarding_bp, url_prefix='/api/onboarding')  # Register onboarding blueprint
+
+    # Ensure all tables are created
     with app.app_context():
         from models import Employee, OnboardingDocument, WelcomeEmail, Policy
         db.create_all()
