@@ -32,6 +32,20 @@ class Employee(db.Model):
     def __repr__(self):
         return f'<Employee {self.first_name} {self.last_name}>'
     
+class EmployeeProfile(db.Model):
+    __tablename__ = 'employee_profiles'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=False)
+    position = db.Column(db.String(50), nullable=True)
+    department = db.Column(db.String(50), nullable=True)
+    bank_name = db.Column(db.String(100), nullable=True)
+    branch_name = db.Column(db.String(100), nullable=True)
+    account_name = db.Column(db.String(100), nullable=True)
+    account_number = db.Column(db.String(100), nullable=True)
+
+    employee = db.relationship("Employee", backref=db.backref("profile", uselist=False))    
+    
 
 class OnboardingDocument(db.Model):
     __tablename__ = 'onboarding_documents'

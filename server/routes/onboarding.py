@@ -1,24 +1,29 @@
 from flask import Blueprint, jsonify
 from flask_restful import Api, Resource, reqparse
-from extensions import db
-from models import Employee, OnboardingDocument, WelcomeEmail, Policy
+from extensions import db, mail  # Import mail here
+from models import Employee, OnboardingDocument, WelcomeEmail, Policy, EmployeeProfile
 from flask_mail import Message
-from extensions import mail  # Assuming mail has been initialized in extensions.py
 import uuid
 
 # Create Blueprint and API
 onboarding_bp = Blueprint('onboarding', __name__)
 api = Api(onboarding_bp)
 
-# Registration Parser
 register_parser = reqparse.RequestParser()
 register_parser.add_argument('first_name', type=str, required=True, help="First name is required")
 register_parser.add_argument('last_name', type=str, required=True, help="Last name is required")
 register_parser.add_argument('email', type=str, required=True, help="Email is required")
 register_parser.add_argument('phone', type=str, required=True, help="Phone number is required")
-register_parser.add_argument('position', type=str, required=True, help="Position is required")
-register_parser.add_argument('department', type=str, required=True, help="Department is required")
 register_parser.add_argument('password', type=str, required=True, help="Password is required")
+
+# Define Profile Update Parser
+profile_parser = reqparse.RequestParser()
+profile_parser.add_argument('position', type=str, required=False)
+profile_parser.add_argument('department', type=str, required=False)
+profile_parser.add_argument('bank_name', type=str, required=False)
+profile_parser.add_argument('branch_name', type=str, required=False)
+profile_parser.add_argument('account_name', type=str, required=False)
+profile_parser.add_argument('account_number', type=str, required=False)
 
 # Document Submission Parser
 doc_parser = reqparse.RequestParser()
@@ -40,9 +45,7 @@ class RegisterEmployee(Resource):
             first_name=args['first_name'],
             last_name=args['last_name'],
             email=args['email'],
-            phone=args['phone'],
-            position=args['position'],
-            department=args['department']
+            phone=args['phone']
         )
         employee.set_password(args['password'])
 
@@ -52,12 +55,37 @@ class RegisterEmployee(Resource):
 
         # Send welcome email
         msg = Message(subject="Welcome to the Company", 
-                      sender="no-reply@company.com", 
+                      sender=mail.default_sender, 
                       recipients=[employee.email])
         msg.body = "Welcome to the team! Please complete your onboarding tasks."
         mail.send(msg)
 
         return jsonify({"message": "Employee registered successfully, welcome email sent."})
+
+class UpdateEmployeeProfile(Resource):
+    def put(self, employee_id):
+        args = profile_parser.parse_args()
+        employee = Employee.query.get(employee_id)
+        if not employee:
+            return jsonify({"message": "Employee not found"}), 404
+
+        # Check if the employee already has a profile
+        if not employee.profile:
+            profile = EmployeeProfile(employee_id=employee.id)
+            db.session.add(profile)
+        else:
+            profile = employee.profile
+
+        # Update profile fields if provided
+        profile.position = args['position'] if args['position'] else profile.position
+        profile.department = args['department'] if args['department'] else profile.department
+        profile.bank_name = args['bank_name'] if args['bank_name'] else profile.bank_name
+        profile.branch_name = args['branch_name'] if args['branch_name'] else profile.branch_name
+        profile.account_name = args['account_name'] if args['account_name'] else profile.account_name
+        profile.account_number = args['account_number'] if args['account_number'] else profile.account_number
+        
+        db.session.commit()
+        return jsonify({"message": "Employee profile updated successfully"})
 
 class SubmitDocument(Resource):
     def post(self):
@@ -109,3 +137,5 @@ api.add_resource(SubmitDocument, '/submit-document')
 api.add_resource(UpdateBankDetails, '/<string:employee_id>/update-bank-details')
 api.add_resource(WelcomeEmailStatus, '/<string:employee_id>/welcome-email-status')
 api.add_resource(GetPolicies, '/policies')
+api.add_resource(UpdateEmployeeProfile, '/<string:employee_id>/update-profile')
+

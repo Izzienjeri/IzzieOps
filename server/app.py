@@ -1,9 +1,9 @@
 from flask import Flask
 from config import Config
 from flask_migrate import Migrate
-from extensions import db, mail  # Import mail if you're using Flask-Mail for email functionality
+from extensions import db, mail  # Import mail
 from serializer import serializer_bp
-from routes.onboarding import onboarding_bp  # Import the onboarding blueprint
+from routes.onboarding import onboarding_bp
 
 # Initialize migration tools
 migrate = Migrate()
@@ -15,20 +15,20 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    mail.init_app(app)  # Initialize mail if using email functionality
+    mail.init_app(app)  # Initialize mail
 
     # Register blueprints
     app.register_blueprint(serializer_bp)
-    app.register_blueprint(onboarding_bp, url_prefix='/api/onboarding')  # Register onboarding blueprint
+    app.register_blueprint(onboarding_bp, url_prefix='/api/onboarding')
 
-    # Ensure all tables are created
+    # Create tables if not exist
     with app.app_context():
         from models import Employee, OnboardingDocument, WelcomeEmail, Policy
         db.create_all()
 
     @app.route('/')
     def index():
-        return "Welcome to the Employee Management System!"
+        return "Welcome to IzzieOps!"
 
     return app
 
