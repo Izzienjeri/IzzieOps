@@ -1,7 +1,7 @@
 from datetime import datetime
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
-from extensions import db  # Import db from extensions
+from extensions import db  
 
 class Employee(db.Model):
     __tablename__ = 'employees'
@@ -30,13 +30,13 @@ class Employee(db.Model):
         return check_password_hash(self.password, password)
 
     def __repr__(self):
-        return f'<Employee {self.first_name} {self.last_name}>'
+        return f'<Employee {self.first_name} {self.last_name} - {self.email}>'
     
 class EmployeeProfile(db.Model):
     __tablename__ = 'employee_profiles'
     
-    id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
     position = db.Column(db.String(50), nullable=True)
     department = db.Column(db.String(50), nullable=True)
     bank_name = db.Column(db.String(100), nullable=True)
@@ -45,6 +45,9 @@ class EmployeeProfile(db.Model):
     account_number = db.Column(db.String(100), nullable=True)
 
     employee = db.relationship("Employee", backref=db.backref("profile", uselist=False))    
+
+    def __repr__(self):
+        return f'<EmployeeProfile for Employee ID {self.employee_id}>'
     
 
 class OnboardingDocument(db.Model):

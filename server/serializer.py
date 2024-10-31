@@ -4,7 +4,6 @@ from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from models import Employee, OnboardingDocument, WelcomeEmail, Policy
 
-# Create a Blueprint for serializers
 serializer_bp = Blueprint('serializer_bp', __name__)
 ma = Marshmallow(serializer_bp)
 
@@ -28,12 +27,13 @@ class EmployeeSchema(SQLAlchemyAutoSchema):
         exclude = ('password',)  # Exclude password for security
 
     onboarding_documents = fields.Nested(OnboardingDocumentSchema, many=True)
+    # Ensure these fields exist in the Employee model
     national_id_number = fields.String(required=True)
     kra_pin_number = fields.String(required=True)
     
     # Updated bank details
     bank_name = fields.String(required=True)
-    branch_name = fields.String(required=False)
+    branch_name = fields.String(allow_none=True)  # Use allow_none for optional fields
     account_name = fields.String(required=True)
     account_number = fields.String(required=True)  # No need to hash
 
@@ -48,8 +48,8 @@ class WelcomeEmailSchema(SQLAlchemyAutoSchema):
     employee_id = fields.UUID(required=True)
     subject = fields.String(required=True)
     body = fields.String(required=True)
-    sent_at = fields.DateTime(required=False)
-    opened_at = fields.DateTime(required=False)  # New field for tracking email open status
+    sent_at = fields.DateTime(allow_none=True)  # Use allow_none for optional fields
+    opened_at = fields.DateTime(allow_none=True)  # New field for tracking email open status
 
 welcome_email_schema = WelcomeEmailSchema()
 
