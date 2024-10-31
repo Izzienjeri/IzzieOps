@@ -1,96 +1,101 @@
 # seed.py
-from app import create_app
+import uuid
+from datetime import datetime
 from extensions import db
 from models import Employee, OnboardingDocument, WelcomeEmail, Policy
+from app import create_app
 
 app = create_app()
 
 def seed_data():
     with app.app_context():
-        # Create sample employees
-        employee1 = Employee(
-            first_name='John',
-            last_name='Doe',
-            email='john.doe@example.com',
-            phone='1234567890',
-            position='Software Engineer',
-            department='Engineering',
-        )
-        employee1.set_password('password123')  # Set password
-        
-        employee2 = Employee(
-            first_name='Jane',
-            last_name='Smith',
-            email='jane.smith@example.com',
-            phone='0987654321',
-            position='Product Manager',
-            department='Product',
-        )
-        employee2.set_password('password456')  # Set password
+        # Check if employees already exist
+        existing_employees = db.session.query(Employee).filter(Employee.email.in_(["john.doe@example.com", "jane.smith@example.com"])).all()
+        existing_emails = {emp.email for emp in existing_employees}
 
-        # Add employees to the session
-        db.session.add(employee1)
-        db.session.add(employee2)
+        # Seed Employees if they don't exist
+        if "john.doe@example.com" not in existing_emails:
+            employee1 = Employee(
+                id=str(uuid.uuid4()),
+                first_name='John',
+                last_name='Doe',
+                email='john.doe@example.com',
+                phone='1234567890',
+                position='Software Engineer',
+                department='Engineering',
+                password='securepassword'
+            )
+            db.session.add(employee1)
 
-        # Commit the session to the database
+        if "jane.smith@example.com" not in existing_emails:
+            employee2 = Employee(
+                id=str(uuid.uuid4()),
+                first_name='Jane',
+                last_name='Smith',
+                email='jane.smith@example.com',
+                phone='0987654321',
+                position='Product Manager',
+                department='Product',
+                password='securepassword'
+            )
+            db.session.add(employee2)
+
+        # Commit to save the new employees if any
         db.session.commit()
 
-        # Create sample onboarding documents
-        doc1 = OnboardingDocument(
-            employee_id=employee1.id,
-            document_type='Tax Form',
-            document_path='/path/to/tax_form.pdf',
-        )
-        
-        doc2 = OnboardingDocument(
-            employee_id=employee2.id,
-            document_type='ID Verification',
-            document_path='/path/to/id_verification.pdf',
-        )
-        
-        db.session.add(doc1)
-        db.session.add(doc2)
+        # Seed Onboarding Documents for existing employees
+        for emp in existing_employees:
+            if not db.session.query(OnboardingDocument).filter_by(employee_id=emp.id).count():  # Check if any docs exist for the employee
+                doc1 = OnboardingDocument(
+                    employee_id=emp.id,
+                    document_type='Employment Contract',
+                    document_path='path/to/contract.pdf',
+                    submitted_at=datetime.utcnow()
+                )
 
-        # Commit onboarding documents
+                doc2 = OnboardingDocument(
+                    employee_id=emp.id,
+                    document_type='Tax Forms',
+                    document_path='path/to/tax_forms.pdf',
+                    submitted_at=datetime.utcnow()
+                )
+
+                db.session.add(doc1)
+                db.session.add(doc2)
+
+        # Seed Welcome Emails for existing employees
+        for emp in existing_employees:
+            if not db.session.query(WelcomeEmail).filter_by(employee_id=emp.id).count():  # Check if any emails sent for the employee
+                welcome_email = WelcomeEmail(
+                    employee_id=emp.id,
+                    subject='Welcome to the Team!',
+                    body=f'Hello {emp.first_name}, welcome to our company!',
+                    sent_at=datetime.utcnow()
+                )
+                db.session.add(welcome_email)
+
+        # Seed Policies if not already existing
+        if not db.session.query(Policy).count():  # Check if policies exist
+            policy1 = Policy(
+                title='Company Code of Conduct',
+                content='All employees are expected to adhere to the company code of conduct.',
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+
+            policy2 = Policy(
+                title='Leave Policy',
+                content='Employees are entitled to paid leave under certain conditions.',
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+
+            db.session.add(policy1)
+            db.session.add(policy2)
+
+        # Commit the session
         db.session.commit()
-
-        # Create sample welcome emails
-        welcome_email1 = WelcomeEmail(
-            employee_id=employee1.id,
-            subject='Welcome to the Team!',
-            body='We are excited to have you on board, John!',
-        )
-
-        welcome_email2 = WelcomeEmail(
-            employee_id=employee2.id,
-            subject='Welcome to the Team!',
-            body='We are excited to have you on board, Jane!',
-        )
-
-        db.session.add(welcome_email1)
-        db.session.add(welcome_email2)
-
-        # Commit welcome emails
-        db.session.commit()
-
-        # Create sample policies
-        policy1 = Policy(
-            title='Employee Handbook',
-            content='This is the employee handbook covering company policies and procedures.',
-        )
-
-        policy2 = Policy(
-            title='Code of Conduct',
-            content='All employees are expected to adhere to the company code of conduct.',
-        )
-
-        db.session.add(policy1)
-        db.session.add(policy2)
-
-        # Commit policies
-        db.session.commit()
-
-        print("Database seeded successfully!")
+        print("Data seeded successfully!")
 
 if __name__ == '__main__':
     seed_data()
