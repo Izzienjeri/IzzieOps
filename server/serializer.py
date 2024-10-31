@@ -1,4 +1,3 @@
-# serializer.py
 from flask import Blueprint
 from flask_marshmallow import Marshmallow
 from marshmallow import fields
@@ -8,7 +7,6 @@ from models import Employee, OnboardingDocument, WelcomeEmail, Policy
 # Create a Blueprint for serializers
 serializer_bp = Blueprint('serializer_bp', __name__)
 ma = Marshmallow(serializer_bp)
-
 
 # OnboardingDocument Schema
 class OnboardingDocumentSchema(SQLAlchemyAutoSchema):
@@ -30,6 +28,14 @@ class EmployeeSchema(SQLAlchemyAutoSchema):
         exclude = ('password',)  # Exclude password for security
 
     onboarding_documents = fields.Nested(OnboardingDocumentSchema, many=True)
+    national_id_number = fields.String(required=True)
+    kra_pin_number = fields.String(required=True)
+    
+    # Updated bank details
+    bank_name = fields.String(required=True)
+    branch_name = fields.String(required=False)
+    account_name = fields.String(required=True)
+    account_number = fields.String(required=True)  # No need to hash
 
 employee_schema = EmployeeSchema()
 
@@ -42,6 +48,8 @@ class WelcomeEmailSchema(SQLAlchemyAutoSchema):
     employee_id = fields.UUID(required=True)
     subject = fields.String(required=True)
     body = fields.String(required=True)
+    sent_at = fields.DateTime(required=False)
+    opened_at = fields.DateTime(required=False)  # New field for tracking email open status
 
 welcome_email_schema = WelcomeEmailSchema()
 

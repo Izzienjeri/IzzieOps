@@ -1,4 +1,3 @@
-# models.py
 from datetime import datetime
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,6 +14,13 @@ class Employee(db.Model):
     position = db.Column(db.String(100), nullable=False)
     department = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(128), nullable=False)
+    
+    # New fields for bank details
+    bank_name = db.Column(db.String(100), nullable=False)
+    branch_name = db.Column(db.String(100), nullable=True)
+    account_name = db.Column(db.String(100), nullable=False)
+    account_number = db.Column(db.String(20), nullable=False)
+
     onboarding_documents = db.relationship('OnboardingDocument', backref='employee', lazy=True)
 
     def set_password(self, password):
@@ -25,6 +31,7 @@ class Employee(db.Model):
 
     def __repr__(self):
         return f'<Employee {self.first_name} {self.last_name}>'
+    
 
 class OnboardingDocument(db.Model):
     __tablename__ = 'onboarding_documents'
@@ -46,6 +53,7 @@ class WelcomeEmail(db.Model):
     subject = db.Column(db.String(255), nullable=False)
     body = db.Column(db.Text, nullable=False)
     sent_at = db.Column(db.DateTime, nullable=True)
+    opened_at = db.Column(db.DateTime, nullable=True)  # Track when the email was opened
 
     def __repr__(self):
         return f'<WelcomeEmail for Employee ID {self.employee_id}>'
