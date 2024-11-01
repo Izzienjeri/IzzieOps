@@ -1,4 +1,3 @@
-
 from flask import Blueprint, jsonify
 from flask_restful import Api, Resource, reqparse
 from extensions import db, mail
@@ -6,6 +5,7 @@ from models import Employee, OnboardingDocument, Policy, EmployeeProfile
 from flask_mail import Message
 from werkzeug.security import generate_password_hash
 from datetime import datetime
+import uuid
 
 onboarding_bp = Blueprint('onboarding', __name__)
 api = Api(onboarding_bp)
@@ -33,6 +33,11 @@ profile_parser.add_argument('account_number', type=str, required=True, help="Acc
 doc_parser = reqparse.RequestParser()
 doc_parser.add_argument('document_type', type=str, required=True, choices=('National ID', 'KRA Certificate'), help="Document type must be either 'National ID' or 'KRA Certificate'")
 doc_parser.add_argument('document_path', type=str, required=True, help="Document path is required")
+
+# Policy Parser
+policy_parser = reqparse.RequestParser()
+policy_parser.add_argument('title', type=str, required=True, help="Policy title is required")
+policy_parser.add_argument('content', type=str, required=True, help="Policy content is required")
 
 
 class RegisterEmployee(Resource):
@@ -136,8 +141,21 @@ class GetPolicies(Resource):
         return {"policies": policy_list}
 
 
+class CreatePolicy(Resource):
+    def post(self):
+        args = policy_parser.parse_args()
+        policy = Policy(
+            title=args['title'],
+            content=args['content']
+        )
+        db.session.add(policy)
+        db.session.commit()
+        return {"message": "Policy created successfully"}, 201
+
+
 api.add_resource(RegisterEmployee, '/register')
 api.add_resource(UpdateEmployeeProfile, '/<string:employee_id>/update-profile')
 api.add_resource(GetEmployeeProfile, '/<string:employee_id>/profile')  # New route for getting employee profile
 api.add_resource(SubmitDocument, '/<string:employee_id>/submit-document')
 api.add_resource(GetPolicies, '/policies')
+api.add_resource(CreatePolicy, '/policies/create')  # New route for creating policies
