@@ -7,19 +7,15 @@ class Employee(db.Model):
     __tablename__ = 'employees'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(15), nullable=True)
-    position = db.Column(db.String(100), nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    password = db.Column(db.String(128), nullable=False)
-    
-    # New fields for bank details
-    bank_name = db.Column(db.String(100), nullable=False)
-    branch_name = db.Column(db.String(100), nullable=True)
-    account_name = db.Column(db.String(100), nullable=False)
-    account_number = db.Column(db.String(20), nullable=False)
+    first_name = db.Column(db.String(150), nullable=False)
+    last_name = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    phone = db.Column(db.String(30), nullable=True)  
+    # Position and department can be NULL or have default values
+    position = db.Column(db.String(150), nullable=True, default=None)  # Optional field
+    department = db.Column(db.String(150), nullable=True, default=None)  # Optional field
+
+    password = db.Column(db.String(256), nullable=False)  
 
     onboarding_documents = db.relationship('OnboardingDocument', backref='employee', lazy=True)
 
@@ -31,18 +27,19 @@ class Employee(db.Model):
 
     def __repr__(self):
         return f'<Employee {self.first_name} {self.last_name} - {self.email}>'
+
     
 class EmployeeProfile(db.Model):
     __tablename__ = 'employee_profiles'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
-    position = db.Column(db.String(50), nullable=True)
-    department = db.Column(db.String(50), nullable=True)
-    bank_name = db.Column(db.String(100), nullable=True)
-    branch_name = db.Column(db.String(100), nullable=True)
-    account_name = db.Column(db.String(100), nullable=True)
-    account_number = db.Column(db.String(100), nullable=True)
+    position = db.Column(db.String(150), nullable=True)  # Increased length
+    department = db.Column(db.String(150), nullable=True)  # Increased length
+    bank_name = db.Column(db.String(150), nullable=True)  # Increased length
+    branch_name = db.Column(db.String(150), nullable=True)  # Increased length
+    account_name = db.Column(db.String(150), nullable=True)  # Increased length
+    account_number = db.Column(db.String(30), nullable=True)  # Increased length
 
     employee = db.relationship("Employee", backref=db.backref("profile", uselist=False))    
 
@@ -55,8 +52,8 @@ class OnboardingDocument(db.Model):
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
-    document_type = db.Column(db.String(100), nullable=False)
-    document_path = db.Column(db.String(255), nullable=False)
+    document_type = db.Column(db.String(150), nullable=False)  # Increased length
+    document_path = db.Column(db.String(500), nullable=False)  # Increased length
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -67,8 +64,8 @@ class WelcomeEmail(db.Model):
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
-    subject = db.Column(db.String(255), nullable=False)
-    body = db.Column(db.Text, nullable=False)
+    subject = db.Column(db.String(255), nullable=False)  # No change, already 255
+    body = db.Column(db.Text, nullable=False)  # Text type for potentially long body content
     sent_at = db.Column(db.DateTime, nullable=True)
     opened_at = db.Column(db.DateTime, nullable=True)  # Track when the email was opened
 
@@ -79,8 +76,8 @@ class Policy(db.Model):
     __tablename__ = 'policies'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    title = db.Column(db.String(255), nullable=False)
-    content = db.Column(db.Text, nullable=False)
+    title = db.Column(db.String(255), nullable=False)  # No change, already 255
+    content = db.Column(db.Text, nullable=False)  # Text type for potentially long content
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 

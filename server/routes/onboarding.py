@@ -3,7 +3,8 @@ from flask_restful import Api, Resource, reqparse
 from extensions import db, mail  # Import mail here
 from models import Employee, OnboardingDocument, WelcomeEmail, Policy, EmployeeProfile
 from flask_mail import Message
-import uuid
+from werkzeug.security import generate_password_hash
+
 
 # Create Blueprint and API
 onboarding_bp = Blueprint('onboarding', __name__)
@@ -38,16 +39,19 @@ bank_parser.add_argument('branch_name', type=str, required=False)
 bank_parser.add_argument('account_name', type=str, required=True, help="Account name is required")
 bank_parser.add_argument('account_number', type=str, required=True, help="Account number is required")
 
+
+
 class RegisterEmployee(Resource):
     def post(self):
         args = register_parser.parse_args()
+        password_hash = generate_password_hash(args['password'])
         employee = Employee(
             first_name=args['first_name'],
             last_name=args['last_name'],
             email=args['email'],
-            phone=args['phone']
+            phone=args['phone'],
+            password=password_hash
         )
-        employee.set_password(args['password'])
 
         # Save employee
         db.session.add(employee)
@@ -55,12 +59,12 @@ class RegisterEmployee(Resource):
 
         # Send welcome email
         msg = Message(subject="Welcome to the Company", 
-                      sender=mail.default_sender, 
-                      recipients=[employee.email])
-        msg.body = "Welcome to the team! Please complete your onboarding tasks."
+                      sender=mail.default_sender,
+                      recipients=[args['email']],
+                      body="Welcome, {}! Your account has been created.".format(args['first_name']))
         mail.send(msg)
 
-        return jsonify({"message": "Employee registered successfully, welcome email sent."})
+        return {"message": "Employee registered successfully!"}, 201
 
 class UpdateEmployeeProfile(Resource):
     def put(self, employee_id):
@@ -85,7 +89,7 @@ class UpdateEmployeeProfile(Resource):
         profile.account_number = args['account_number'] if args['account_number'] else profile.account_number
         
         db.session.commit()
-        return jsonify({"message": "Employee profile updated successfully"})
+        return {"message": "Employee profile updated successfully"}, 201
 
 class SubmitDocument(Resource):
     def post(self):
@@ -98,7 +102,7 @@ class SubmitDocument(Resource):
         db.session.add(document)
         db.session.commit()
         
-        return jsonify({"message": "Document submitted successfully"})
+        return{"message": "Document submitted successfully"}, 201
 
 class UpdateBankDetails(Resource):
     def put(self, employee_id):
@@ -114,7 +118,7 @@ class UpdateBankDetails(Resource):
         employee.account_number = args['account_number']
         db.session.commit()
 
-        return jsonify({"message": "Bank details updated successfully"})
+        return {"message": "Bank details updated successfully"}, 201
 
 class WelcomeEmailStatus(Resource):
     def get(self, employee_id):
@@ -123,7 +127,7 @@ class WelcomeEmailStatus(Resource):
             return jsonify({"message": "No welcome email record found"}), 404
         
         status = {"sent_at": email.sent_at, "opened": bool(email.opened_at)}
-        return jsonify(status)
+        return status
 
 class GetPolicies(Resource):
     def get(self):
