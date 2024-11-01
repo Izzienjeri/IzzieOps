@@ -1,15 +1,14 @@
 from flask import Blueprint, jsonify
 from flask_restful import Api, Resource, reqparse
-from extensions import db, mail  # Import mail here
+from extensions import db, mail
 from models import Employee, OnboardingDocument, WelcomeEmail, Policy, EmployeeProfile
 from flask_mail import Message
 from werkzeug.security import generate_password_hash
 
-
-# Create Blueprint and API
 onboarding_bp = Blueprint('onboarding', __name__)
 api = Api(onboarding_bp)
 
+# Registration Parser
 register_parser = reqparse.RequestParser()
 register_parser.add_argument('first_name', type=str, required=True, help="First name is required")
 register_parser.add_argument('last_name', type=str, required=True, help="Last name is required")
@@ -17,19 +16,20 @@ register_parser.add_argument('email', type=str, required=True, help="Email is re
 register_parser.add_argument('phone', type=str, required=True, help="Phone number is required")
 register_parser.add_argument('password', type=str, required=True, help="Password is required")
 
-# Define Profile Update Parser
+# Profile Update Parser
 profile_parser = reqparse.RequestParser()
-profile_parser.add_argument('position', type=str, required=False)
-profile_parser.add_argument('department', type=str, required=False)
-profile_parser.add_argument('bank_name', type=str, required=False)
-profile_parser.add_argument('branch_name', type=str, required=False)
-profile_parser.add_argument('account_name', type=str, required=False)
-profile_parser.add_argument('account_number', type=str, required=False)
+profile_parser.add_argument('position', type=str, required=True)
+profile_parser.add_argument('department', type=str, required=True)
+profile_parser.add_argument('national_id_number', type=str, required=True, help="National ID number is required")
+profile_parser.add_argument('kra_pin_number', type=str, required=True, help="KRA PIN number is required")
+profile_parser.add_argument('bank_name', type=str, required=True, help="Bank name is required")
+profile_parser.add_argument('branch_name', type=str, required=True)
+profile_parser.add_argument('account_name', type=str, required=True, help="Account name is required")
+profile_parser.add_argument('account_number', type=str, required=True, help="Account number is required")
 
 # Document Submission Parser
 doc_parser = reqparse.RequestParser()
-doc_parser.add_argument('employee_id', type=str, required=True, help="Employee ID is required")
-doc_parser.add_argument('document_type', type=str, required=True, help="Document type is required")
+doc_parser.add_argument('document_type', type=str, required=True, choices=('National ID', 'KRA Certificate'), help="Document type must be either 'National ID' or 'KRA Certificate'")
 doc_parser.add_argument('document_path', type=str, required=True, help="Document path is required")
 
 # Bank Details Parser
@@ -38,8 +38,6 @@ bank_parser.add_argument('bank_name', type=str, required=True, help="Bank name i
 bank_parser.add_argument('branch_name', type=str, required=False)
 bank_parser.add_argument('account_name', type=str, required=True, help="Account name is required")
 bank_parser.add_argument('account_number', type=str, required=True, help="Account number is required")
-
-
 
 class RegisterEmployee(Resource):
     def post(self):
@@ -71,45 +69,55 @@ class UpdateEmployeeProfile(Resource):
         args = profile_parser.parse_args()
         employee = Employee.query.get(employee_id)
         if not employee:
-            return jsonify({"message": "Employee not found"}), 404
+            return {"message": "Employee not found"}, 404
 
-        # Check if the employee already has a profile
         if not employee.profile:
-            profile = EmployeeProfile(employee_id=employee.id)
+            profile = EmployeeProfile(employee_id=employee.id,
+                                      national_id_number=args['national_id_number'],
+                                      kra_pin_number=args['kra_pin_number'])
             db.session.add(profile)
         else:
             profile = employee.profile
+            profile.national_id_number = args['national_id_number']
+            profile.kra_pin_number = args['kra_pin_number']
 
-        # Update profile fields if provided
-        profile.position = args['position'] if args['position'] else profile.position
-        profile.department = args['department'] if args['department'] else profile.department
-        profile.bank_name = args['bank_name'] if args['bank_name'] else profile.bank_name
-        profile.branch_name = args['branch_name'] if args['branch_name'] else profile.branch_name
-        profile.account_name = args['account_name'] if args['account_name'] else profile.account_name
-        profile.account_number = args['account_number'] if args['account_number'] else profile.account_number
+        profile.position = args.get('position', profile.position)
+        profile.department = args.get('department', profile.department)
+        profile.bank_name = args.get('bank_name', profile.bank_name)
+        profile.branch_name = args.get('branch_name', profile.branch_name)
+        profile.account_name = args.get('account_name', profile.account_name)
+        profile.account_number = args.get('account_number', profile.account_number)
         
         db.session.commit()
-        return {"message": "Employee profile updated successfully"}, 201
+        return {"message": "Employee profile updated successfully"}, 200
 
 class SubmitDocument(Resource):
-    def post(self):
+    def post(self, employee_id):
         args = doc_parser.parse_args()
+
+        # Validate document format
+        if args['document_type'] == "National ID" and not args['document_path'].endswith('.png'):
+            return {"message": "National ID must be uploaded as a PNG file."}, 400
+        elif args['document_type'] == "KRA Certificate" and not args['document_path'].endswith('.pdf'):
+            return {"message": "KRA certificate must be uploaded as a PDF file."}, 400
+
+        # If validations pass, create the document entry
         document = OnboardingDocument(
-            employee_id=args['employee_id'],
+            employee_id=employee_id,  # Use employee_id from the URL
             document_type=args['document_type'],
             document_path=args['document_path']
         )
         db.session.add(document)
         db.session.commit()
         
-        return{"message": "Document submitted successfully"}, 201
+        return {"message": "Document submitted successfully"}, 201
 
 class UpdateBankDetails(Resource):
     def put(self, employee_id):
         args = bank_parser.parse_args()
         employee = Employee.query.get(employee_id)
         if not employee:
-            return jsonify({"message": "Employee not found"}), 404
+            return {"message": "Employee not found"}, 404
 
         # Update bank details
         employee.bank_name = args['bank_name']
@@ -124,7 +132,7 @@ class WelcomeEmailStatus(Resource):
     def get(self, employee_id):
         email = WelcomeEmail.query.filter_by(employee_id=employee_id).first()
         if not email:
-            return jsonify({"message": "No welcome email record found"}), 404
+            return {"message": "No welcome email record found"}, 404
         
         status = {"sent_at": email.sent_at, "opened": bool(email.opened_at)}
         return status
@@ -133,13 +141,10 @@ class GetPolicies(Resource):
     def get(self):
         policies = Policy.query.all()
         policy_list = [{"title": policy.title, "content": policy.content} for policy in policies]
-        return jsonify({"policies": policy_list})
+        return {"policies": policy_list}
 
-# Register routes
 api.add_resource(RegisterEmployee, '/register')
-api.add_resource(SubmitDocument, '/submit-document')
-api.add_resource(UpdateBankDetails, '/<string:employee_id>/update-bank-details')
+api.add_resource(UpdateEmployeeProfile, '/<string:employee_id>/update-profile')
+api.add_resource(SubmitDocument, '/<string:employee_id>/submit-document')  # Updated route
 api.add_resource(WelcomeEmailStatus, '/<string:employee_id>/welcome-email-status')
 api.add_resource(GetPolicies, '/policies')
-api.add_resource(UpdateEmployeeProfile, '/<string:employee_id>/update-profile')
-

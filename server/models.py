@@ -11,8 +11,6 @@ class Employee(db.Model):
     last_name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     phone = db.Column(db.String(30), nullable=True)  
-    position = db.Column(db.String(150), nullable=True, default=None)  
-    department = db.Column(db.String(150), nullable=True, default=None)  
 
     password = db.Column(db.String(256), nullable=False)  
 
@@ -27,7 +25,8 @@ class Employee(db.Model):
     def __repr__(self):
         return f'<Employee {self.first_name} {self.last_name} - {self.email}>'
 
-    
+
+
 class EmployeeProfile(db.Model):
     __tablename__ = 'employee_profiles'
     
@@ -38,7 +37,9 @@ class EmployeeProfile(db.Model):
     bank_name = db.Column(db.String(150), nullable=True) 
     branch_name = db.Column(db.String(150), nullable=True) 
     account_name = db.Column(db.String(150), nullable=True) 
-    account_number = db.Column(db.String(30), nullable=True) 
+    account_number = db.Column(db.String(30), nullable=True)
+    national_id_number = db.Column(db.String(30), nullable=True, unique=True)  # Added National ID Number
+    kra_pin_number = db.Column(db.String(30), nullable=True, unique=True)  # Added KRA PIN Number
 
     employee = db.relationship("Employee", backref=db.backref("profile", uselist=False))    
 
@@ -82,3 +83,5 @@ class Policy(db.Model):
 
     def __repr__(self):
         return f'<Policy {self.title}>'
+
+
