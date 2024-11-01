@@ -1,121 +1,87 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from flask_restful import Api, Resource, reqparse
 from extensions import db
-from models import Employee, Attendance, Break, ActivityLog  # Assume these models exist
-from serializer import AttendanceSchema, BreakSchema, ActivityLogSchema  # Assume these serializers exist
+from models import AttendanceRecord
 from datetime import datetime
 
 attendance_bp = Blueprint('attendance', __name__)
 api = Api(attendance_bp)
 
-# Create request parsers for the various operations
-clock_in_parser = reqparse.RequestParser()
-clock_in_parser.add_argument('employee_id', type=str, required=True, help='Employee ID is required')
-
-clock_out_parser = reqparse.RequestParser()
-clock_out_parser.add_argument('employee_id', type=str, required=True, help='Employee ID is required')
-
-start_break_parser = reqparse.RequestParser()
-start_break_parser.add_argument('employee_id', type=str, required=True, help='Employee ID is required')
-
-end_break_parser = reqparse.RequestParser()
-end_break_parser.add_argument('employee_id', type=str, required=True, help='Employee ID is required')
-
-retrieve_timesheet_parser = reqparse.RequestParser()
-retrieve_timesheet_parser.add_argument('employee_id', type=str, required=True, help='Employee ID is required')
-
+# Attendance Parser
+attendance_parser = reqparse.RequestParser()
+attendance_parser.add_argument('employee_id', type=str, required=True, help="Employee ID is required")
+attendance_parser.add_argument('clock_in_time', type=str)  # ISO format
+attendance_parser.add_argument('clock_out_time', type=str)  # ISO format
+attendance_parser.add_argument('break_start_time', type=str)  # ISO format
+attendance_parser.add_argument('break_end_time', type=str)  # ISO format
 
 class ClockIn(Resource):
     def post(self):
-        args = clock_in_parser.parse_args()
-        employee_id = args['employee_id']
-        current_time = datetime.utcnow()
-
-        # Check if employee is already clocked in
-        attendance = Attendance.query.filter_by(employee_id=employee_id, clock_out_time=None).first()
-        if attendance:
-            return {'message': 'Employee is already clocked in.'}, 400
-
-        # Create a new attendance record
-        new_attendance = Attendance(employee_id=employee_id, clock_in_time=current_time)
-        db.session.add(new_attendance)
+        args = attendance_parser.parse_args()
+        record = AttendanceRecord(
+            employee_id=args['employee_id'],
+            clock_in_time=datetime.utcnow() if not args['clock_in_time'] else datetime.fromisoformat(args['clock_in_time'])
+        )
+        db.session.add(record)
         db.session.commit()
-
-        return {'message': 'Clock-in successful.', 'clock_in_time': current_time}, 201
-
+        return {"message": "Clock-in recorded successfully"}, 201
 
 class ClockOut(Resource):
-    def post(self):
-        args = clock_out_parser.parse_args()
-        employee_id = args['employee_id']
-        current_time = datetime.utcnow()
+    def put(self, record_id):
+        args = attendance_parser.parse_args()
+        record = AttendanceRecord.query.get(record_id)
+        if not record:
+            return {"message": "Attendance record not found"}, 404
 
-        # Check for existing clock-in record
-        attendance = Attendance.query.filter_by(employee_id=employee_id, clock_out_time=None).first()
-        if not attendance:
-            return {'message': 'Employee is not clocked in.'}, 400
+        record.clock_out_time = datetime.utcnow() if not args['clock_out_time'] else datetime.fromisoformat(args['clock_out_time'])
+        # Calculate total hours worked if both clock in and out times are available
+        if record.clock_in_time and record.clock_out_time:
+            record.total_hours_worked = (record.clock_out_time - record.clock_in_time).total_seconds() / 3600  # Convert to hours
 
-        # Update attendance record with clock-out time
-        attendance.clock_out_time = current_time
         db.session.commit()
-
-        total_hours = (attendance.clock_out_time - attendance.clock_in_time).total_seconds() / 3600
-        return {'message': 'Clock-out successful.', 'total_hours': total_hours}, 200
-
+        return {"message": "Clock-out recorded successfully"}, 200
 
 class StartBreak(Resource):
-    def post(self):
-        args = start_break_parser.parse_args()
-        employee_id = args['employee_id']
-        current_time = datetime.utcnow()
-
-        # Validate that the employee is clocked in
-        attendance = Attendance.query.filter_by(employee_id=employee_id, clock_out_time=None).first()
-        if not attendance:
-            return {'message': 'Employee is not clocked in.'}, 400
-
-        # Log the start of the break
-        new_break = Break(employee_id=employee_id, break_start_time=current_time, attendance_id=attendance.id)
-        db.session.add(new_break)
+    def put(self, record_id):
+        args = attendance_parser.parse_args()
+        record = AttendanceRecord.query.get(record_id)
+        if not record:
+            return {"message": "Attendance record not found"}, 404
+        
+        record.break_start_time = datetime.utcnow() if not args['break_start_time'] else datetime.fromisoformat(args['break_start_time'])
         db.session.commit()
-
-        return {'message': 'Break started.', 'break_start_time': current_time}, 201
-
+        return {"message": "Break started successfully"}, 200
 
 class EndBreak(Resource):
-    def post(self):
-        args = end_break_parser.parse_args()
-        employee_id = args['employee_id']
-        current_time = datetime.utcnow()
-
-        # Validate that the employee is on a break
-        break_record = Break.query.filter_by(employee_id=employee_id, break_end_time=None).first()
-        if not break_record:
-            return {'message': 'Employee is not on a break.'}, 400
-
-        # Update the break record with the end time
-        break_record.break_end_time = current_time
+    def put(self, record_id):
+        args = attendance_parser.parse_args()
+        record = AttendanceRecord.query.get(record_id)
+        if not record:
+            return {"message": "Attendance record not found"}, 404
+        
+        record.break_end_time = datetime.utcnow() if not args['break_end_time'] else datetime.fromisoformat(args['break_end_time'])
         db.session.commit()
+        return {"message": "Break ended successfully"}, 200
 
-        duration = (break_record.break_end_time - break_record.break_start_time).total_seconds() / 60  # Duration in minutes
-        return {'message': 'Break ended.', 'duration': duration}, 200
+class GetAttendanceRecord(Resource):
+    def get(self, employee_id):
+        records = AttendanceRecord.query.filter_by(employee_id=employee_id).all()
+        if not records:
+            return {"message": "No attendance records found for this employee"}, 404
+        
+        attendance_data = [{
+            "id": record.id,
+            "clock_in_time": record.clock_in_time,
+            "clock_out_time": record.clock_out_time,
+            "break_start_time": record.break_start_time,
+            "break_end_time": record.break_end_time,
+            "total_hours_worked": record.total_hours_worked
+        } for record in records]
+        
+        return jsonify(attendance_data)
 
-
-class RetrieveTimesheet(Resource):
-    def get(self):
-        args = retrieve_timesheet_parser.parse_args()
-        employee_id = args['employee_id']
-
-        # Fetch attendance records
-        attendance_records = Attendance.query.filter_by(employee_id=employee_id).all()
-        attendance_schema = AttendanceSchema(many=True)
-        return attendance_schema.dump(attendance_records), 200
-
-
-# Add resources to the API
-api.add_resource(ClockIn, '/api/attendance/clock-in')
-api.add_resource(ClockOut, '/api/attendance/clock-out')
-api.add_resource(StartBreak, '/api/attendance/start-break')
-api.add_resource(EndBreak, '/api/attendance/end-break')
-api.add_resource(RetrieveTimesheet, '/api/attendance/timesheet')
-
+api.add_resource(ClockIn, '/clock-in')
+api.add_resource(ClockOut, '/clock-out/<string:record_id>')
+api.add_resource(StartBreak, '/start-break/<string:record_id>')
+api.add_resource(EndBreak, '/end-break/<string:record_id>')
+api.add_resource(GetAttendanceRecord, '/attendance/<string:employee_id>')

@@ -88,29 +88,3 @@ class AttendanceRecord(db.Model):
     def __repr__(self):
         return f'<AttendanceRecord for Employee ID {self.employee_id}>'
 
-class ActivityLog(db.Model):
-    __tablename__ = 'activity_logs'
-
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
-    activity_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    activity_type = db.Column(db.String(50))  # e.g., "mouse_move", "key_press"
-    additional_info = db.Column(db.Text, nullable=True)  # Any extra info if needed
-
-    employee = db.relationship('Employee', backref=db.backref('activity_logs', lazy=True))
-
-    def __repr__(self):
-        return f'<ActivityLog for Employee ID {self.employee_id} at {self.activity_timestamp}>'
-
-class ScreenshotCapture(db.Model):
-    __tablename__ = 'screenshot_captures'
-
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
-    capture_time = db.Column(db.DateTime, default=datetime.utcnow)
-    screenshot_path = db.Column(db.String(500), nullable=False)  # URL or path to the screenshot
-
-    employee = db.relationship('Employee', backref=db.backref('screenshot_captures', lazy=True))
-
-    def __repr__(self):
-        return f'<ScreenshotCapture for Employee ID {self.employee_id} at {self.capture_time}>'
