@@ -1,3 +1,4 @@
+
 from flask import Blueprint, jsonify
 from flask_restful import Api, Resource, reqparse
 from extensions import db, mail
@@ -51,8 +52,7 @@ class RegisterEmployee(Resource):
         db.session.commit()
 
         # Send welcome email
-        subject = "Welcome to IzzieOps"  # Define the subject here
-        body = "Welcome! Here are some important details for you.."
+        subject = "Welcome to IzzieOps"
         msg = Message(subject=subject, 
                       sender=mail.default_sender,
                       recipients=[args['email']],
@@ -61,6 +61,7 @@ class RegisterEmployee(Resource):
 
         return {"message": "Employee registered successfully!"}, 201
     
+
 class UpdateEmployeeProfile(Resource):
     def put(self, employee_id):
         args = profile_parser.parse_args()
@@ -88,12 +89,37 @@ class UpdateEmployeeProfile(Resource):
         db.session.commit()
         return {"message": "Employee profile updated successfully"}, 200
 
+
+class GetEmployeeProfile(Resource):
+    def get(self, employee_id):
+        employee = Employee.query.get(employee_id)
+        if not employee:
+            return {"message": "Employee not found"}, 404
+        
+        profile = employee.profile
+        profile_data = {
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "email": employee.email,
+            "phone": employee.phone,
+            "position": profile.position if profile else None,
+            "department": profile.department if profile else None,
+            "national_id_number": profile.national_id_number if profile else None,
+            "kra_pin_number": profile.kra_pin_number if profile else None,
+            "bank_name": profile.bank_name if profile else None,
+            "branch_name": profile.branch_name if profile else None,
+            "account_name": profile.account_name if profile else None,
+            "account_number": profile.account_number if profile else None
+        }
+        return jsonify(profile_data)
+
+
 class SubmitDocument(Resource):
     def post(self, employee_id):
         args = doc_parser.parse_args()
 
         document = OnboardingDocument(
-            employee_id=employee_id,  # Use employee_id from the URL
+            employee_id=employee_id,
             document_type=args['document_type'],
             document_path=args['document_path']
         )
@@ -109,7 +135,9 @@ class GetPolicies(Resource):
         policy_list = [{"title": policy.title, "content": policy.content} for policy in policies]
         return {"policies": policy_list}
 
+
 api.add_resource(RegisterEmployee, '/register')
 api.add_resource(UpdateEmployeeProfile, '/<string:employee_id>/update-profile')
-api.add_resource(SubmitDocument, '/<string:employee_id>/submit-document')  # Updated route
+api.add_resource(GetEmployeeProfile, '/<string:employee_id>/profile')  # New route for getting employee profile
+api.add_resource(SubmitDocument, '/<string:employee_id>/submit-document')
 api.add_resource(GetPolicies, '/policies')

@@ -1,0 +1,32 @@
+{
+    "first_name": "izzie",
+    "last_name": "njeri",
+    "email": "izziedev254@gmail.com",
+    "phone": "+254746724466",
+    "password": "njeri1456"
+}
+
+
+{
+  "position": "Software Engineer",
+  "department": "IT",
+  "national_id_number": "12345678",
+  "kra_pin_number": "KRA123456",
+  "bank_name": "Bank of Africa",
+  "branch_name": "Nairobi Branch",
+  "account_name": "izzie njeri",
+  "account_number": "123456789"
+}
+
+
+
+  
+{
+    "document_type": "National ID",
+    "document_path": "/home/izzie/Downloads/IMG_1812.PNG"
+}
+
+{
+    "document_type": "KRA Certificate",
+    "document_path": "/home/izzie/Downloads/Elizabeth Njeri.pdf"
+}
