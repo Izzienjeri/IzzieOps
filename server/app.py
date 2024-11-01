@@ -19,11 +19,11 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(serializer_bp)
-    app.register_blueprint(onboarding_bp, url_prefix='/api/onboarding')
+    app.register_blueprint(onboarding_bp)
 
     # Create tables if not exist
     with app.app_context():
-        from models import Employee, OnboardingDocument, WelcomeEmail, Policy
+        from models import Employee, OnboardingDocument, Policy
         db.create_all()
 
     @app.route('/')

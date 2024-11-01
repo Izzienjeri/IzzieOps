@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask_marshmallow import Marshmallow
 from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from models import Employee, EmployeeProfile, OnboardingDocument, WelcomeEmail, Policy
+from models import Employee, EmployeeProfile, OnboardingDocument, Policy
 
 serializer_bp = Blueprint('serializer_bp', __name__)
 ma = Marshmallow(serializer_bp)
@@ -50,17 +50,6 @@ class EmployeeSchema(SQLAlchemyAutoSchema):
 
 employee_schema = EmployeeSchema()
 
-class WelcomeEmailSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = WelcomeEmail
-        include_fk = True 
-
-    subject = fields.String(required=True)
-    body = fields.String(required=True)
-    sent_at = fields.DateTime(allow_none=True)  
-    opened_at = fields.DateTime(allow_none=True) 
-
-welcome_email_schema = WelcomeEmailSchema()
 
 class PolicySchema(SQLAlchemyAutoSchema):
     class Meta:

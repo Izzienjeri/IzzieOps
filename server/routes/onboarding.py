@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify
 from flask_restful import Api, Resource, reqparse
 from extensions import db, mail
-from models import Employee, OnboardingDocument, WelcomeEmail, Policy, EmployeeProfile
+from models import Employee, OnboardingDocument, Policy, EmployeeProfile
 from flask_mail import Message
 from werkzeug.security import generate_password_hash
+from datetime import datetime
 
 onboarding_bp = Blueprint('onboarding', __name__)
 api = Api(onboarding_bp)
@@ -32,12 +33,6 @@ doc_parser = reqparse.RequestParser()
 doc_parser.add_argument('document_type', type=str, required=True, choices=('National ID', 'KRA Certificate'), help="Document type must be either 'National ID' or 'KRA Certificate'")
 doc_parser.add_argument('document_path', type=str, required=True, help="Document path is required")
 
-# Bank Details Parser
-bank_parser = reqparse.RequestParser()
-bank_parser.add_argument('bank_name', type=str, required=True, help="Bank name is required")
-bank_parser.add_argument('branch_name', type=str, required=False)
-bank_parser.add_argument('account_name', type=str, required=True, help="Account name is required")
-bank_parser.add_argument('account_number', type=str, required=True, help="Account number is required")
 
 class RegisterEmployee(Resource):
     def post(self):
@@ -56,14 +51,16 @@ class RegisterEmployee(Resource):
         db.session.commit()
 
         # Send welcome email
-        msg = Message(subject="Welcome to the Company", 
+        subject = "Welcome to IzzieOps"  # Define the subject here
+        body = "Welcome! Here are some important details for you.."
+        msg = Message(subject=subject, 
                       sender=mail.default_sender,
                       recipients=[args['email']],
                       body="Welcome, {}! Your account has been created.".format(args['first_name']))
         mail.send(msg)
 
         return {"message": "Employee registered successfully!"}, 201
-
+    
 class UpdateEmployeeProfile(Resource):
     def put(self, employee_id):
         args = profile_parser.parse_args()
@@ -95,13 +92,6 @@ class SubmitDocument(Resource):
     def post(self, employee_id):
         args = doc_parser.parse_args()
 
-        # Validate document format
-        if args['document_type'] == "National ID" and not args['document_path'].endswith('.png'):
-            return {"message": "National ID must be uploaded as a PNG file."}, 400
-        elif args['document_type'] == "KRA Certificate" and not args['document_path'].endswith('.pdf'):
-            return {"message": "KRA certificate must be uploaded as a PDF file."}, 400
-
-        # If validations pass, create the document entry
         document = OnboardingDocument(
             employee_id=employee_id,  # Use employee_id from the URL
             document_type=args['document_type'],
@@ -112,30 +102,6 @@ class SubmitDocument(Resource):
         
         return {"message": "Document submitted successfully"}, 201
 
-class UpdateBankDetails(Resource):
-    def put(self, employee_id):
-        args = bank_parser.parse_args()
-        employee = Employee.query.get(employee_id)
-        if not employee:
-            return {"message": "Employee not found"}, 404
-
-        # Update bank details
-        employee.bank_name = args['bank_name']
-        employee.branch_name = args.get('branch_name', '')
-        employee.account_name = args['account_name']
-        employee.account_number = args['account_number']
-        db.session.commit()
-
-        return {"message": "Bank details updated successfully"}, 201
-
-class WelcomeEmailStatus(Resource):
-    def get(self, employee_id):
-        email = WelcomeEmail.query.filter_by(employee_id=employee_id).first()
-        if not email:
-            return {"message": "No welcome email record found"}, 404
-        
-        status = {"sent_at": email.sent_at, "opened": bool(email.opened_at)}
-        return status
 
 class GetPolicies(Resource):
     def get(self):
@@ -146,5 +112,4 @@ class GetPolicies(Resource):
 api.add_resource(RegisterEmployee, '/register')
 api.add_resource(UpdateEmployeeProfile, '/<string:employee_id>/update-profile')
 api.add_resource(SubmitDocument, '/<string:employee_id>/submit-document')  # Updated route
-api.add_resource(WelcomeEmailStatus, '/<string:employee_id>/welcome-email-status')
 api.add_resource(GetPolicies, '/policies')
