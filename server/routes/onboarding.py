@@ -155,7 +155,7 @@ class CreatePolicy(Resource):
 
 api.add_resource(RegisterEmployee, '/register')
 api.add_resource(UpdateEmployeeProfile, '/<string:employee_id>/update-profile')
-api.add_resource(GetEmployeeProfile, '/<string:employee_id>/profile')  # New route for getting employee profile
+api.add_resource(GetEmployeeProfile, '/<string:employee_id>/profile')  
 api.add_resource(SubmitDocument, '/<string:employee_id>/submit-document')
 api.add_resource(GetPolicies, '/policies')
-api.add_resource(CreatePolicy, '/policies/create')  # New route for creating policies
+api.add_resource(CreatePolicy, '/policies/create')

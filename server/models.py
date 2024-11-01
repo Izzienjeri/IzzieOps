@@ -72,36 +72,45 @@ class Policy(db.Model):
         return f'<Policy {self.title}>'
     
 
-#TIME and attendance management
-
 class AttendanceRecord(db.Model):
     __tablename__ = 'attendance_records'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
-    clock_in_time = db.Column(db.DateTime, nullable=False)
+    clock_in_time = db.Column(db.DateTime, nullable=True)
     clock_out_time = db.Column(db.DateTime, nullable=True)
-    total_hours_worked = db.Column(db.Float, nullable=True)
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
-
-    employee = db.relationship("Employee", backref=db.backref("attendance_records", lazy=True))
+    break_start_time = db.Column(db.DateTime, nullable=True)
+    break_end_time = db.Column(db.DateTime, nullable=True)
+    total_hours_worked = db.Column(db.Float, nullable=True, default=0.0)
+    
+    employee = db.relationship('Employee', backref=db.backref('attendance_records', lazy=True))
 
     def __repr__(self):
-        return f'<AttendanceRecord {self.date} for Employee ID {self.employee_id}>'
+        return f'<AttendanceRecord for Employee ID {self.employee_id}>'
 
-class Timesheet(db.Model):
-    __tablename__ = 'timesheets'
+class ActivityLog(db.Model):
+    __tablename__ = 'activity_logs'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
-    week_start_date = db.Column(db.Date, nullable=False)
-    week_end_date = db.Column(db.Date, nullable=False)
-    total_hours = db.Column(db.Float, nullable=False, default=0.0)
-    approved = db.Column(db.Boolean, default=False)
+    activity_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    activity_type = db.Column(db.String(50))  # e.g., "mouse_move", "key_press"
+    additional_info = db.Column(db.Text, nullable=True)  # Any extra info if needed
 
-    employee = db.relationship("Employee", backref=db.backref("timesheets", lazy=True))
+    employee = db.relationship('Employee', backref=db.backref('activity_logs', lazy=True))
 
     def __repr__(self):
-        return f'<Timesheet from {self.week_start_date} to {self.week_end_date} for Employee ID {self.employee_id}>'
+        return f'<ActivityLog for Employee ID {self.employee_id} at {self.activity_timestamp}>'
 
+class ScreenshotCapture(db.Model):
+    __tablename__ = 'screenshot_captures'
 
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
+    capture_time = db.Column(db.DateTime, default=datetime.utcnow)
+    screenshot_path = db.Column(db.String(500), nullable=False)  # URL or path to the screenshot
+
+    employee = db.relationship('Employee', backref=db.backref('screenshot_captures', lazy=True))
+
+    def __repr__(self):
+        return f'<ScreenshotCapture for Employee ID {self.employee_id} at {self.capture_time}>'

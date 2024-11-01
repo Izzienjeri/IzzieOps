@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from extensions import db, mail  # Import mail
 from serializer import serializer_bp
 from routes.onboarding import onboarding_bp
+from routes.attendance import attendance_bp
 
 # Initialize migration tools
 migrate = Migrate()
@@ -15,11 +16,12 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    mail.init_app(app)  # Initialize mail
+    mail.init_app(app)  
 
-    # Register blueprints
     app.register_blueprint(serializer_bp)
     app.register_blueprint(onboarding_bp)
+    app.register_blueprint(attendance_bp)
+
 
     # Create tables if not exist
     with app.app_context():
