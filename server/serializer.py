@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask_marshmallow import Marshmallow
 from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from models import Employee, EmployeeProfile, OnboardingDocument, Policy
+from models import Employee, EmployeeProfile, OnboardingDocument, Policy, AttendanceRecord, Timesheet
 
 serializer_bp = Blueprint('serializer_bp', __name__)
 ma = Marshmallow(serializer_bp)
@@ -14,7 +14,7 @@ class OnboardingDocumentSchema(SQLAlchemyAutoSchema):
 
     document_type = fields.String(required=True)
     document_path = fields.String(required=True)
-    submitted_at = fields.DateTime(allow_none=True)  # Include submitted_at if you want to serialize it
+    submitted_at = fields.DateTime(allow_none=True) 
 
 onboarding_document_schema = OnboardingDocumentSchema()
 
@@ -62,3 +62,30 @@ class PolicySchema(SQLAlchemyAutoSchema):
     updated_at = fields.DateTime(allow_none=True)
 
 policy_schema = PolicySchema()
+
+
+
+class AttendanceRecordSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = AttendanceRecord
+        include_fk = True
+
+    clock_in_time = fields.DateTime(required=True)
+    clock_out_time = fields.DateTime(allow_none=True)
+    total_hours_worked = fields.Float(allow_none=True)
+    date = fields.Date(required=True)
+
+attendance_record_schema = AttendanceRecordSchema()
+
+class TimesheetSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Timesheet
+        include_fk = True
+
+    week_start_date = fields.Date(required=True)
+    week_end_date = fields.Date(required=True)
+    total_hours = fields.Float(required=True)
+    approved = fields.Boolean(default=False)
+
+timesheet_schema = TimesheetSchema()
+

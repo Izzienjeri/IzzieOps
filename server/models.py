@@ -70,5 +70,38 @@ class Policy(db.Model):
 
     def __repr__(self):
         return f'<Policy {self.title}>'
+    
+
+#TIME and attendance management
+
+class AttendanceRecord(db.Model):
+    __tablename__ = 'attendance_records'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
+    clock_in_time = db.Column(db.DateTime, nullable=False)
+    clock_out_time = db.Column(db.DateTime, nullable=True)
+    total_hours_worked = db.Column(db.Float, nullable=True)
+    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+
+    employee = db.relationship("Employee", backref=db.backref("attendance_records", lazy=True))
+
+    def __repr__(self):
+        return f'<AttendanceRecord {self.date} for Employee ID {self.employee_id}>'
+
+class Timesheet(db.Model):
+    __tablename__ = 'timesheets'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    employee_id = db.Column(db.String(36), db.ForeignKey('employees.id'), nullable=False)
+    week_start_date = db.Column(db.Date, nullable=False)
+    week_end_date = db.Column(db.Date, nullable=False)
+    total_hours = db.Column(db.Float, nullable=False, default=0.0)
+    approved = db.Column(db.Boolean, default=False)
+
+    employee = db.relationship("Employee", backref=db.backref("timesheets", lazy=True))
+
+    def __repr__(self):
+        return f'<Timesheet from {self.week_start_date} to {self.week_end_date} for Employee ID {self.employee_id}>'
 
 
