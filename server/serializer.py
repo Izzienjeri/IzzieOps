@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask_marshmallow import Marshmallow
 from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from models import Employee, EmployeeProfile, OnboardingDocument, Policy,AttendanceRecord, ActivityLog, ScreenshotCapture
+from models import Employee, EmployeeProfile, OnboardingDocument, Policy,AttendanceRecord
 
 serializer_bp = Blueprint('serializer_bp', __name__)
 ma = Marshmallow(serializer_bp)
@@ -76,25 +76,4 @@ class AttendanceRecordSchema(SQLAlchemyAutoSchema):
 
 attendance_record_schema = AttendanceRecordSchema()
 
-class ActivityLogSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = ActivityLog
-        include_fk = True
 
-    employee_id = fields.String(required=True)
-    activity_timestamp = fields.DateTime(allow_none=False)
-    activity_type = fields.String(required=True)
-    additional_info = fields.String(allow_none=True)
-
-activity_log_schema = ActivityLogSchema()
-
-class ScreenshotCaptureSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = ScreenshotCapture
-        include_fk = True
-
-    employee_id = fields.String(required=True)
-    capture_time = fields.DateTime(allow_none=False)
-    screenshot_path = fields.String(required=True)
-
-screenshot_capture_schema = ScreenshotCaptureSchema()
