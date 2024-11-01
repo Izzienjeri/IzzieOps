@@ -7,11 +7,10 @@ from models import Employee, OnboardingDocument, WelcomeEmail, Policy
 serializer_bp = Blueprint('serializer_bp', __name__)
 ma = Marshmallow(serializer_bp)
 
-# OnboardingDocument Schema
 class OnboardingDocumentSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = OnboardingDocument
-        include_fk = True  # Include foreign keys
+        include_fk = True 
 
     employee_id = fields.UUID(required=True)
     document_type = fields.String(required=True)
@@ -19,44 +18,39 @@ class OnboardingDocumentSchema(SQLAlchemyAutoSchema):
 
 onboarding_document_schema = OnboardingDocumentSchema()
 
-# Employee Schema
 class EmployeeSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Employee
-        include_fk = True  # Include foreign keys
-        exclude = ('password',)  # Exclude password for security
+        include_fk = True 
+        exclude = ('password',)  
 
     onboarding_documents = fields.Nested(OnboardingDocumentSchema, many=True)
-    # Ensure these fields exist in the Employee model
     national_id_number = fields.String(required=True)
     kra_pin_number = fields.String(required=True)
     
-    # Updated bank details
     bank_name = fields.String(required=True)
-    branch_name = fields.String(allow_none=True)  # Use allow_none for optional fields
+    branch_name = fields.String(allow_none=True)  
     account_name = fields.String(required=True)
-    account_number = fields.String(required=True)  # No need to hash
+    account_number = fields.String(required=True) 
 
 employee_schema = EmployeeSchema()
 
-# WelcomeEmail Schema
 class WelcomeEmailSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = WelcomeEmail
-        include_fk = True  # Include foreign keys
+        include_fk = True 
 
     employee_id = fields.UUID(required=True)
     subject = fields.String(required=True)
     body = fields.String(required=True)
-    sent_at = fields.DateTime(allow_none=True)  # Use allow_none for optional fields
-    opened_at = fields.DateTime(allow_none=True)  # New field for tracking email open status
+    sent_at = fields.DateTime(allow_none=True)  
+    opened_at = fields.DateTime(allow_none=True) 
 
 welcome_email_schema = WelcomeEmailSchema()
 
-# Policy Schema
 class PolicySchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Policy
-        include_fk = True  # Include foreign keys
+        include_fk = True 
 
 policy_schema = PolicySchema()
