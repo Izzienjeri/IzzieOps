@@ -1,5 +1,3 @@
-// src/app/register.js
-
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 
@@ -89,7 +87,7 @@ export default function Register() {
       <div
         className="w-1/2 relative"
         style={{
-          backgroundImage: `url('/green1.jpeg')`,
+          backgroundImage: url('/green1.jpeg'),
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'blur(5px)',

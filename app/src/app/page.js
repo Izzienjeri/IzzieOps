@@ -1,10 +1,9 @@
-import Register from "./components/register";
+import Register from './components/register';
 
-
-export default function Home() {
+export default function Page() {
   return (
-    <>
-      <Register/>
-    </>
+    <div className="h-screen flex items-center justify-center">
+      <Register />
+    </div>
   );
 }
