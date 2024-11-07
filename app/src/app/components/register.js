@@ -1,3 +1,5 @@
+"use client";
+
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 
@@ -84,17 +86,18 @@ export default function Register() {
       </div>
 
       {/* Right Side with Blurry Background Image */}
-      <div
-        className="w-1/2 relative"
-        style={{
-          backgroundImage: url('/green1.jpeg'),
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'blur(5px)',
-        }}
-      >
-        <div className="absolute inset-0 bg-black opacity-20"></div> {/* Overlay */}
-      </div>
+        <div
+    className="w-1/2 relative"
+    style={{
+      backgroundImage: 'url(/green1.jpeg)', // Corrected here
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      filter: 'blur(5px)',
+    }}
+  >
+    <div className="absolute inset-0 bg-black opacity-20"></div> {/* Overlay */}
+  </div>
+
     </div>
   );
 }
