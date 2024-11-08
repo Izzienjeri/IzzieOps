@@ -49,102 +49,118 @@ const Register = () => {
   });
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Register</h2>
-      <form onSubmit={formik.handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
-            First Name
-          </label>
-          <input
-            type="text"
-            id="first_name"
-            name="first_name"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            onChange={formik.handleChange}
-            value={formik.values.first_name}
-          />
-          {formik.errors.first_name && formik.touched.first_name && (
-            <div className="text-red-600 text-sm">{formik.errors.first_name}</div>
-          )}
-        </div>
+    <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen bg-gray-100 p-8">
+      {/* Marketing Side */}
+      <div className="lg:w-1/2 w-full text-center lg:text-left lg:pr-10 mb-10 lg:mb-0">
+        <h1 className="text-3xl font-bold text-[#358600] mb-6">
+          Welcome to Our Community!
+        </h1>
+        <p className="text-lg text-gray-700 mb-4">
+          Join us and start your journey today. Enjoy exclusive benefits, personalized content, and more.
+        </p>
+        <p className="text-lg text-gray-700">
+          Become a part of something amazing. Sign up now!
+        </p>
+      </div>
 
-        <div className="mb-4">
-          <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-            Last Name
-          </label>
-          <input
-            type="text"
-            id="last_name"
-            name="last_name"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            onChange={formik.handleChange}
-            value={formik.values.last_name}
-          />
-          {formik.errors.last_name && formik.touched.last_name && (
-            <div className="text-red-600 text-sm">{formik.errors.last_name}</div>
-          )}
-        </div>
+      {/* Form Side */}
+      <div className="lg:w-1/2 w-full max-w-lg p-8 bg-white shadow-lg rounded-lg">
+        <h2 className="text-2xl font-bold text-[#358600] mb-6">Register</h2>
+        <form onSubmit={formik.handleSubmit}>
+          <div className="mb-6">
+            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
+              First Name
+            </label>
+            <input
+              type="text"
+              id="first_name"
+              name="first_name"
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-[#63C132] focus:border-[#63C132] text-gray-700"
+              onChange={formik.handleChange}
+              value={formik.values.first_name}
+            />
+            {formik.errors.first_name && formik.touched.first_name && (
+              <div className="text-red-600 text-sm mt-1">{formik.errors.first_name}</div>
+            )}
+          </div>
 
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            onChange={formik.handleChange}
-            value={formik.values.email}
-          />
-          {formik.errors.email && formik.touched.email && (
-            <div className="text-red-600 text-sm">{formik.errors.email}</div>
-          )}
-        </div>
+          <div className="mb-6">
+            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
+              Last Name
+            </label>
+            <input
+              type="text"
+              id="last_name"
+              name="last_name"
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-[#63C132] focus:border-[#63C132] text-gray-700"
+              onChange={formik.handleChange}
+              value={formik.values.last_name}
+            />
+            {formik.errors.last_name && formik.touched.last_name && (
+              <div className="text-red-600 text-sm mt-1">{formik.errors.last_name}</div>
+            )}
+          </div>
 
-        <div className="mb-4">
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-            Phone Number
-          </label>
-          <input
-            type="text"
-            id="phone"
-            name="phone"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            onChange={formik.handleChange}
-            value={formik.values.phone}
-          />
-          {formik.errors.phone && formik.touched.phone && (
-            <div className="text-red-600 text-sm">{formik.errors.phone}</div>
-          )}
-        </div>
+          <div className="mb-6">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-[#63C132] focus:border-[#63C132] text-gray-700"
+              onChange={formik.handleChange}
+              value={formik.values.email}
+            />
+            {formik.errors.email && formik.touched.email && (
+              <div className="text-red-600 text-sm mt-1">{formik.errors.email}</div>
+            )}
+          </div>
 
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            onChange={formik.handleChange}
-            value={formik.values.password}
-          />
-          {formik.errors.password && formik.touched.password && (
-            <div className="text-red-600 text-sm">{formik.errors.password}</div>
-          )}
-        </div>
+          <div className="mb-6">
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              id="phone"
+              name="phone"
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-[#63C132] focus:border-[#63C132] text-gray-700"
+              onChange={formik.handleChange}
+              value={formik.values.phone}
+            />
+            {formik.errors.phone && formik.touched.phone && (
+              <div className="text-red-600 text-sm mt-1">{formik.errors.phone}</div>
+            )}
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white ${loading ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"}`}
-        >
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </form>
+          <div className="mb-6">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-[#63C132] focus:border-[#63C132] text-gray-700"
+              onChange={formik.handleChange}
+              value={formik.values.password}
+            />
+            {formik.errors.password && formik.touched.password && (
+              <div className="text-red-600 text-sm mt-1">{formik.errors.password}</div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 text-lg font-semibold rounded-md shadow-sm text-white ${loading ? "bg-gray-400" : "bg-[#358600] hover:bg-[#63C132]"} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#63C132]`}
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
