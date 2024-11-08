@@ -49,24 +49,25 @@ const Register = () => {
   });
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen bg-gray-100 p-8">
-      {/* Marketing Side */}
-      <div className="lg:w-1/2 w-full text-center lg:text-left lg:pr-10 mb-10 lg:mb-0">
-        <h1 className="text-3xl font-bold text-[#358600] mb-6">
-          Welcome to Our Community!
-        </h1>
-        <p className="text-lg text-gray-700 mb-4">
-          Join us and start your journey today. Enjoy exclusive benefits, personalized content, and more.
-        </p>
-        <p className="text-lg text-gray-700">
-          Become a part of something amazing. Sign up now!
-        </p>
-      </div>
-
-      {/* Form Side */}
-      <div className="lg:w-1/2 w-full max-w-lg p-8 bg-white shadow-lg rounded-lg">
-        <h2 className="text-2xl font-bold text-[#358600] mb-6">Register</h2>
+    <div
+      className="h-screen w-screen flex items-center justify-center p-4"
+      style={{
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundColor: "white",
+      }}
+    >
+      <div
+        className="max-w-lg w-full p-8 shadow-lg rounded-lg relative bg-transparent"
+        style={{
+          background: "linear-gradient(to right, #358600, #63C132 50%, rgba(255,255,255,0.5))",
+        }}
+      >
+        <h2 className="text-3xl font-bold text-center mb-6" style={{ color: "#358600" }}>
+          Register
+        </h2>
         <form onSubmit={formik.handleSubmit}>
+          {/* First Name Field */}
           <div className="mb-6">
             <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
               First Name
@@ -151,11 +152,17 @@ const Register = () => {
               <div className="text-red-600 text-sm mt-1">{formik.errors.password}</div>
             )}
           </div>
-
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 text-lg font-semibold rounded-md shadow-sm text-white ${loading ? "bg-gray-400" : "bg-[#358600] hover:bg-[#63C132]"} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#63C132]`}
+            className={`w-full py-3 px-4 border border-transparent rounded-lg text-white ${
+              loading ? "bg-gray-400" : "hover:opacity-90 focus:ring-4 focus:ring-green-400"
+            }`}
+            style={{
+              background: loading
+                ? "bg-gray-400"
+                : "linear-gradient(to right, #358600, #63C132 50%, rgba(255, 255, 255, 0.3))",
+            }}
           >
             {loading ? "Registering..." : "Register"}
           </button>
@@ -166,3 +173,7 @@ const Register = () => {
 };
 
 export default Register;
+
+
+
+
