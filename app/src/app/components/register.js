@@ -70,13 +70,12 @@ const Register = () => {
           }}
         >
           <div
-            className="bg-transparent text-center p-4 shadow-lg"
+            className="bg-transparent text-center"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontSize: "2.5rem",
               fontWeight: "bold",
               color: "#333",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
             }}
           >
             Welcome to the Team, Let's Start Your Journey!
@@ -90,7 +89,7 @@ const Register = () => {
             backgroundColor: "#E8F7EE",
           }}
         >
-          <h2 className="text-3xl font-bold text-center mb-6" style={{ color: "#B8C4BB" }}>
+          <h2 className="text-3xl font-bold text-center mb-6" style={{ color: "#000000" }}>
             Register
           </h2>
           <form onSubmit={formik.handleSubmit}>
